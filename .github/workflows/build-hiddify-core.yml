@@ -1,0 +1,101 @@
+name: Build HiddifyCore XCFramework
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_ref:
+        description: "Git ref to build from (recommended: v4.0.5)"
+        required: true
+        default: "v4.0.5"
+      release_tag:
+        description: "Release tag for generated core bundle"
+        required: true
+        default: "core-v4.0.5-bk1"
+      publish_release:
+        description: "Publish GitHub Release"
+        required: true
+        default: true
+        type: boolean
+
+permissions:
+  contents: write
+
+concurrency:
+  group: core-xcframework-${{ github.ref }}-${{ inputs.release_tag }}
+  cancel-in-progress: false
+
+jobs:
+  build-core:
+    runs-on: macos-14
+    env:
+      SOURCE_REF: ${{ inputs.source_ref }}
+      RELEASE_TAG: ${{ inputs.release_tag }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Switch to source ref
+        run: |
+          set -euo pipefail
+          git fetch --tags --force
+          git checkout "$SOURCE_REF"
+          echo "Checked out: $(git rev-parse --short HEAD)"
+
+      - name: Resolve core version
+        id: core_version
+        run: |
+          set -euo pipefail
+          CORE_VERSION=$(sed -n 's/^core.version=//p' dependencies.properties)
+          if [ -z "$CORE_VERSION" ]; then
+            echo "Failed to read core.version from dependencies.properties" >&2
+            exit 1
+          fi
+          echo "core_version=$CORE_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Core version: $CORE_VERSION"
+
+      - name: Download iOS core bundle
+        run: |
+          set -euo pipefail
+          make ios-libs
+          test -d ios/Frameworks/HiddifyCore.xcframework
+
+      - name: Package XCFramework
+        run: |
+          set -euo pipefail
+          rm -f HiddifyCore.xcframework.zip HiddifyCore.xcframework.zip.sha256
+          ditto -c -k --sequesterRsrc --keepParent ios/Frameworks/HiddifyCore.xcframework HiddifyCore.xcframework.zip
+          shasum -a 256 HiddifyCore.xcframework.zip | awk '{print $1}' > HiddifyCore.xcframework.zip.sha256
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: HiddifyCore-${{ inputs.source_ref }}
+          path: |
+            HiddifyCore.xcframework.zip
+            HiddifyCore.xcframework.zip.sha256
+          if-no-files-found: error
+
+      - name: Publish release
+        if: ${{ inputs.publish_release }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.release_tag }}
+          name: HiddifyCore ${{ inputs.release_tag }}
+          target_commitish: ${{ github.sha }}
+          generate_release_notes: false
+          body: |
+            Built from ref: `${{ inputs.source_ref }}`
+            App commit: `${{ github.sha }}`
+            `core.version` from dependencies.properties: `${{ steps.core_version.outputs.core_version }}`
+
+            Assets:
+            - `HiddifyCore.xcframework.zip`
+            - `HiddifyCore.xcframework.zip.sha256`
+          files: |
+            HiddifyCore.xcframework.zip
+            HiddifyCore.xcframework.zip.sha256
+          prerelease: false
+          make_latest: false
