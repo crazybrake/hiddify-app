@@ -22,6 +22,7 @@
 
 /* Begin PBXBuildFile section */
 		27D5969F2A92B6AB00E2BE2B /* hiddify-core.dylib in Bundle Framework */ = {isa = PBXBuildFile; fileRef = 27D5969E2A92B6AB00E2BE2B /* hiddify-core.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		7EAB2A5C4C6D4A1BA1C0D111 /* HiddifyCore in Frameworks */ = {isa = PBXBuildFile; productRef = 7EAB2A5C4C6D4A1BA1C0D113 /* HiddifyCore */; };
 		331C80D8294CF71000263BE5 /* RunnerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 331C80D7294CF71000263BE5 /* RunnerTests.swift */; };
 		335BBD1B22A9A15E00E9071D /* GeneratedPluginRegistrant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 335BBD1A22A9A15E00E9071D /* GeneratedPluginRegistrant.swift */; };
 		33CC10F12044A3C60003C045 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33CC10F02044A3C60003C045 /* AppDelegate.swift */; };
@@ -107,6 +108,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7EAB2A5C4C6D4A1BA1C0D111 /* HiddifyCore in Frameworks */,
 				414949DC2CCE3D370069D5BA /* LaunchAtLogin in Frameworks */,
 				FEE8413B259D2FDED8BE933A /* Pods_Runner.framework in Frameworks */,
 			);
@@ -255,6 +257,7 @@
 			);
 			name = Runner;
 			packageProductDependencies = (
+				7EAB2A5C4C6D4A1BA1C0D113 /* HiddifyCore */,
 				414949DB2CCE3D370069D5BA /* LaunchAtLogin */,
 			);
 			productName = Runner;
@@ -301,6 +304,7 @@
 			);
 			mainGroup = 33CC10E42044A3C60003C045;
 			packageReferences = (
+				7EAB2A5C4C6D4A1BA1C0D112 /* XCLocalSwiftPackageReference "Local Packages" */,
 				414949DA2CCE3D370069D5BA /* XCRemoteSwiftPackageReference "LaunchAtLogin-Legacy" */,
 			);
 			productRefGroup = 33CC10EE2044A3C60003C045 /* Products */;
@@ -823,6 +827,13 @@
 		};
 /* End XCConfigurationList section */
 
+/* Begin XCLocalSwiftPackageReference section */
+		7EAB2A5C4C6D4A1BA1C0D112 /* XCLocalSwiftPackageReference "Local Packages" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "Local Packages";
+		};
+/* End XCLocalSwiftPackageReference section */
+
 /* Begin XCRemoteSwiftPackageReference section */
 		414949DA2CCE3D370069D5BA /* XCRemoteSwiftPackageReference "LaunchAtLogin-Legacy" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -835,6 +846,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		7EAB2A5C4C6D4A1BA1C0D113 /* HiddifyCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 7EAB2A5C4C6D4A1BA1C0D112 /* XCLocalSwiftPackageReference "Local Packages" */;
+			productName = HiddifyCore;
+		};
 		414949DB2CCE3D370069D5BA /* LaunchAtLogin */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 414949DA2CCE3D370069D5BA /* XCRemoteSwiftPackageReference "LaunchAtLogin-Legacy" */;

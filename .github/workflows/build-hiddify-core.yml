@@ -1,4 +1,4 @@
-name: Build HiddifyCore XCFramework
+name: Build HiddifyCore Bundles
 
 on:
   workflow_dispatch:
@@ -21,7 +21,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: core-xcframework-${{ github.ref }}-${{ inputs.release_tag }}
+  group: core-bundles-${{ github.ref }}-${{ inputs.release_tag }}
   cancel-in-progress: false
 
 jobs:
@@ -56,18 +56,38 @@ jobs:
           echo "core_version=$CORE_VERSION" >> "$GITHUB_OUTPUT"
           echo "Core version: $CORE_VERSION"
 
+      - name: Initialize submodules
+        run: |
+          set -euo pipefail
+          git config --global url."https://github.com/".insteadOf git@github.com:
+          git config --global url."https://github.com/".insteadOf ssh://git@github.com/
+          git submodule update --init --recursive
+
       - name: Download iOS core bundle
         run: |
           set -euo pipefail
           make ios-libs
           test -d ios/Frameworks/HiddifyCore.xcframework
 
-      - name: Package XCFramework
+      - name: Build macOS core XCFramework
+        run: |
+          set -euo pipefail
+          make build-macos-libs
+          test -d macos/Frameworks/HiddifyCore.xcframework
+
+      - name: Package iOS XCFramework
         run: |
           set -euo pipefail
           rm -f HiddifyCore.xcframework.zip HiddifyCore.xcframework.zip.sha256
           ditto -c -k --sequesterRsrc --keepParent ios/Frameworks/HiddifyCore.xcframework HiddifyCore.xcframework.zip
           shasum -a 256 HiddifyCore.xcframework.zip | awk '{print $1}' > HiddifyCore.xcframework.zip.sha256
+
+      - name: Package macOS XCFramework
+        run: |
+          set -euo pipefail
+          rm -f HiddifyCore-macos.xcframework.zip HiddifyCore-macos.xcframework.zip.sha256
+          ditto -c -k --sequesterRsrc --keepParent macos/Frameworks/HiddifyCore.xcframework HiddifyCore-macos.xcframework.zip
+          shasum -a 256 HiddifyCore-macos.xcframework.zip | awk '{print $1}' > HiddifyCore-macos.xcframework.zip.sha256
 
       - name: Upload workflow artifacts
         uses: actions/upload-artifact@v4
@@ -76,6 +96,8 @@ jobs:
           path: |
             HiddifyCore.xcframework.zip
             HiddifyCore.xcframework.zip.sha256
+            HiddifyCore-macos.xcframework.zip
+            HiddifyCore-macos.xcframework.zip.sha256
           if-no-files-found: error
 
       - name: Publish release
@@ -92,10 +114,14 @@ jobs:
             `core.version` from dependencies.properties: `${{ steps.core_version.outputs.core_version }}`
 
             Assets:
-            - `HiddifyCore.xcframework.zip`
+            - `HiddifyCore.xcframework.zip` (iOS)
             - `HiddifyCore.xcframework.zip.sha256`
+            - `HiddifyCore-macos.xcframework.zip`
+            - `HiddifyCore-macos.xcframework.zip.sha256`
           files: |
             HiddifyCore.xcframework.zip
             HiddifyCore.xcframework.zip.sha256
+            HiddifyCore-macos.xcframework.zip
+            HiddifyCore-macos.xcframework.zip.sha256
           prerelease: false
           make_latest: false

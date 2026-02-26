@@ -42,6 +42,7 @@ endif
 BINDIR=hiddify-core$(SEP)bin
 ANDROID_OUT=android$(SEP)app$(SEP)libs
 IOS_OUT=ios$(SEP)Frameworks
+MACOS_FRAMEWORK_OUT=macos$(SEP)Frameworks
 DESKTOP_OUT=hiddify-core$(SEP)bin
 GEO_ASSETS_DIR=assets$(SEP)core
 
@@ -523,7 +524,34 @@ build-linux-libs:
 	make -C hiddify-core -f Makefile linux-amd64 
 
 build-macos-libs:
+	mkdir -p $(MACOS_FRAMEWORK_OUT)
 	make -C hiddify-core -f Makefile macos
+	DYLIB_PATH=""; \
+	for CANDIDATE in "$(BINDIR)/hiddify-core.dylib" "$(BINDIR)/libhiddify-core.dylib"; do \
+		if [ -f "$$CANDIDATE" ]; then DYLIB_PATH="$$CANDIDATE"; break; fi; \
+	done; \
+	if [ -z "$$DYLIB_PATH" ]; then \
+		echo "error: macOS dylib not found in $(BINDIR). Expected hiddify-core.dylib or libhiddify-core.dylib"; \
+		exit 1; \
+	fi; \
+	HEADER_PATH=""; \
+	for CANDIDATE in "$(BINDIR)/hiddify-core.h" "$(BINDIR)/desktop.h" "$(BINDIR)/hiddify-lib-headers.h"; do \
+		if [ -f "$$CANDIDATE" ]; then HEADER_PATH="$$CANDIDATE"; break; fi; \
+	done; \
+	if [ -z "$$HEADER_PATH" ]; then \
+		echo "error: C header not found in $(BINDIR). Expected one of: hiddify-core.h, desktop.h, hiddify-lib-headers.h"; \
+		exit 1; \
+	fi; \
+	HEADERS_DIR="$(BINDIR)/headers-macos"; \
+	rm -rf "$$HEADERS_DIR"; \
+	mkdir -p "$$HEADERS_DIR"; \
+	cp "$$HEADER_PATH" "$$HEADERS_DIR/hiddify-core.h"; \
+	printf "module HiddifyCore { header \"hiddify-core.h\" export * }\n" > "$$HEADERS_DIR/module.modulemap"; \
+	rm -rf "$(MACOS_FRAMEWORK_OUT)/HiddifyCore.xcframework"; \
+	xcodebuild -create-xcframework \
+		-library "$$DYLIB_PATH" \
+		-headers "$$HEADERS_DIR" \
+		-output "$(MACOS_FRAMEWORK_OUT)/HiddifyCore.xcframework"
 
 build-ios-libs: 
 	rm -rf $(IOS_OUT)/HiddifyCore.xcframework 
