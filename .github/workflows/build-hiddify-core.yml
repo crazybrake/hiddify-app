@@ -63,6 +63,12 @@ jobs:
           git config --global --add url."https://github.com/".insteadOf ssh://git@github.com/
           git submodule update --init --recursive
 
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: hiddify-core/go.mod
+          check-latest: true
+
       - name: Download iOS core bundle
         run: |
           set -euo pipefail
