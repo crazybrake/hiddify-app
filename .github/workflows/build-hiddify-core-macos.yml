@@ -26,7 +26,7 @@ concurrency:
 
 jobs:
   build-core-macos:
-    runs-on: ubuntu-latest
+    runs-on: macos-14
     env:
       SOURCE_REF: ${{ inputs.source_ref }}
       RELEASE_TAG: ${{ inputs.release_tag }}
@@ -69,7 +69,7 @@ jobs:
           set -euo pipefail
           rm -f hiddify-core-macos.tar.gz hiddify-core-macos.tar.gz.sha256
           tar -C hiddify-core/bin -czf hiddify-core-macos.tar.gz hiddify-core
-          sha256sum hiddify-core-macos.tar.gz | awk '{print $1}' > hiddify-core-macos.tar.gz.sha256
+          shasum -a 256 hiddify-core-macos.tar.gz | awk '{print $1}' > hiddify-core-macos.tar.gz.sha256
 
       - name: Upload workflow artifacts
         uses: actions/upload-artifact@v4
