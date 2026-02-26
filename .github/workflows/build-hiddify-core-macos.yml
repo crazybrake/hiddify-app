@@ -60,15 +60,22 @@ jobs:
         run: |
           set -euo pipefail
           make macos-libs
-          test -f hiddify-core/bin/hiddify-core
-          chmod +x hiddify-core/bin/hiddify-core
-          file hiddify-core/bin/hiddify-core
+          ls -la hiddify-core/bin
+          if [ -f hiddify-core/bin/hiddify-core ]; then
+            chmod +x hiddify-core/bin/hiddify-core
+            file hiddify-core/bin/hiddify-core
+          elif [ -f hiddify-core/bin/hiddify-core.dylib ]; then
+            file hiddify-core/bin/hiddify-core.dylib
+          else
+            echo "Expected hiddify-core or hiddify-core.dylib in hiddify-core/bin" >&2
+            exit 1
+          fi
 
       - name: Package macOS core bundle
         run: |
           set -euo pipefail
           rm -f hiddify-core-macos.tar.gz hiddify-core-macos.tar.gz.sha256
-          tar -C hiddify-core/bin -czf hiddify-core-macos.tar.gz hiddify-core
+          tar -C hiddify-core/bin -czf hiddify-core-macos.tar.gz .
           shasum -a 256 hiddify-core-macos.tar.gz | awk '{print $1}' > hiddify-core-macos.tar.gz.sha256
 
       - name: Upload workflow artifacts
